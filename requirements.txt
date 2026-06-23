@@ -1,0 +1,7 @@
+numpy
+matplotlib
+scipy
+pillow
+# descomente se for usar o CoppeliaSim:
+# pyzmq
+# coppeliasim-zmqremoteapi-client
