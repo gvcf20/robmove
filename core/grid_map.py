@@ -31,10 +31,16 @@ class GridMap:
 
     # ---------- construtores ----------
     @classmethod
-    def from_png(cls, path, threshold=128, **kw):
+    def from_png(cls, path, threshold=128, max_dim=None, **kw):
+        """Carrega PNG -> occupancy grid (pixel escuro = obstaculo).
+        max_dim: se o mapa for maior, reduz via max-pooling (paredes
+        finas sobrevivem: bloco com qualquer pixel-obstaculo vira obstaculo)."""
         img = np.array(Image.open(path).convert("L"))
-        grid = (img < threshold).astype(np.uint8)   # pixel escuro = obstaculo
-        return cls(grid=grid, **kw)
+        obs = (img < threshold).astype(np.uint8)
+        if max_dim and max(obs.shape) > max_dim:
+            k = int(np.ceil(max(obs.shape) / max_dim))
+            obs = _maxpool(obs, k)
+        return cls(grid=obs, **kw)
 
     @classmethod
     def empty(cls, rows, cols, walls=True, **kw):
@@ -103,6 +109,17 @@ class GridMap:
         c = int((x - self.origin[0]) / self.resolution)
         r = int((y - self.origin[1]) / self.resolution)
         return r, c
+
+
+def _maxpool(a, k):
+    """Reduz a matriz por blocos kxk usando o maximo (max-pooling).
+    Bloco com qualquer celula=1 -> 1. Preserva paredes finas."""
+    rows, cols = a.shape
+    pr, pc = (-rows) % k, (-cols) % k          # padding p/ multiplo de k
+    if pr or pc:
+        a = np.pad(a, ((0, pr), (0, pc)), constant_values=0)
+    R, C = a.shape
+    return a.reshape(R // k, k, C // k, k).max(axis=(1, 3)).astype(np.uint8)
 
 
 def bresenham(a, b):
