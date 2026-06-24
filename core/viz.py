@@ -36,13 +36,20 @@ def _draw_base(gmap, ax, show_inflated=True, show_grid=None):
     ax.set_aspect("equal")
 
 
-def show_map(gmap, path=None, start=None, goal=None, extra=None,
+def show_map(gmap, path=None, start=None, goal=None, extra=None, tree=None,
              title="", show_inflated=True, show_grid=None, ax=None):
     """Plot estatico do mapa, com caminho/start/goal opcionais.
-    `extra`: lista de celulas extra p/ destacar (ex.: arvore RRT, GVD)."""
+    `extra`: celulas extra p/ destacar (ex.: GVD).
+    `tree` : lista de arestas (a, b) de pontos p/ desenhar (ex.: arvore RRT)."""
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 6))
     _draw_base(gmap, ax, show_inflated, show_grid)
+
+    if tree:
+        from matplotlib.collections import LineCollection
+        segs = [[(a[1], a[0]), (b[1], b[0])] for a, b in tree]
+        ax.add_collection(LineCollection(segs, colors="#5dade2",
+                                         linewidths=0.4, zorder=1.5))
 
     if extra:
         er = [c[0] for c in extra]; ec = [c[1] for c in extra]
