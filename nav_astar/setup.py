@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'astar_planner'
+package_name = 'nav_astar'
 
 setup(
     name=package_name,

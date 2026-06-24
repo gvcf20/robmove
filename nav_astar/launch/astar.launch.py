@@ -37,6 +37,16 @@ def generate_launch_description():
         )
     )
 
+    slam = Node(
+    package='slam_toolbox',
+    executable='async_slam_toolbox_node',
+    name='slam_toolbox',
+    output='screen',
+    parameters=[{
+        'use_sim_time': True
+    }]
+)
+
     astar = Node(
         package='nav_astar',
         executable='astar_node',
@@ -53,5 +63,6 @@ def generate_launch_description():
 
     return LaunchDescription([
         sim,
+        slam,
         astar
     ])
