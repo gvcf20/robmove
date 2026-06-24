@@ -1,0 +1,103 @@
+==============================================================================
+ PLANEJAMENTO DE MOVIMENTO DE ROBOS - TRABALHO PRATICO
+ A* (Tarefa 1) | Brushfire+GVD (Tarefa 2) | RRT (Tarefa 3) + simulacao CoppeliaSim
+==============================================================================
+
+------------------------------------------------------------------------------
+(A) DESCRICAO DE CADA ARQUIVO DE CODIGO
+------------------------------------------------------------------------------
+
+core/grid_map.py
+    Representacao do ambiente como occupancy grid (0=livre, 1=obstaculo).
+    - GridMap.from_png(path, max_dim): carrega um PNG como grid; se for grande,
+      reduz por max-pooling (paredes finas sobrevivem).
+    - GridMap.empty(rows, cols): grid vazio com bordas como parede.
+    - inflate(raio): dilata os obstaculos pelo raio do robo (robo vira ponto).
+    - is_free / neighbors (8-conexao, sem cortar quina) / line_of_sight
+      (Bresenham) / to_world / to_cell.
+
+core/viz.py
+    Visualizacao com matplotlib: desenha o mapa com a malha do grid, a zona
+    inflada, o caminho, a arvore do RRT (parametro 'tree') e pontos extras
+    (ex.: GVD). Funcoes: show_map(...) e animate_path(...).
+
+planners/astar.py
+    Tarefa 1 - busca A* em 8-conexao com heuristica octile (admissivel e
+    consistente). Tambem manhattan/euclidean p/ comparacao. smooth() faz a
+    suavizacao por line-of-sight. path_length() mede o comprimento.
+
+planners/brushfire_gvd.py
+    Tarefa 2 - brushfire exato (propagacao tipo Dijkstra a partir de todos os
+    obstaculos: distancia + ponto-base de cada celula livre); extract_gvd()
+    extrai o Diagrama de Voronoi Generalizado; plan() navega start->goal pelo
+    esqueleto (entra no GVD, Dijkstra no grafo do GVD, sai p/ o goal). Roda
+    sobre o grid inflado.
+
+planners/rrt.py
+    Tarefa 3 - RRT no espaco continuo: amostragem com goal bias, vizinho mais
+    proximo, steer com passo fixo, checagem de colisao de segmento e conexao ao
+    goal. smooth() suaviza o caminho. Devolve tambem a arvore (arestas) p/ visu.
+
+sim/coppelia.py
+    Biblioteca de simulacao (CoppeliaSim 4.x, ZMQ Remote API):
+    - connect(): conecta ao simulador.
+    - World: transformacao (linha,coluna) do grid -> (x,y) do mundo.
+    - rectangles(): decompoe os obstaculos em poucos retangulos.
+    - build_scene(): cria chao + paredes a partir do grid.
+    - spawn_robot() / draw_path() / follow_path(): cria e move o robo (seguidor
+      cinematico) pelo caminho planejado.
+    - show_points() / show_tree() / clear_drawings(): animam a FASE DE BUSCA
+      (explorados do A*, esqueleto do GVD, arvore do RRT).
+
+sim/test_connection.py   - testa a conexao Python <-> CoppeliaSim.
+sim/build_scene.py       - gera apenas a cena (chao + paredes) de um mapa.
+sim/navigate.py          - planeja, anima a fase de busca e navega o robo
+                           (1 planejador). Uso: python sim/navigate.py <mapa>
+                           <astar|gvd|rrt> [max_dim].
+sim/demo_all.py          - roda A*, GVD e RRT em sequencia no mesmo mapa.
+
+run_maps.py              - compara os 3 planejadores em todos os mapas de maps/
+                           e gera figuras (A*|GVD|RRT) em maps_out/.
+stress_test.py           - teste de robustez: start/goal aleatorios, inclusive
+                           dentro de obstaculos (os planejadores retornam erro
+                           tratado).
+
+maps/                    - mapas .png usados nos testes (e maps/texturas/).
+requirements.txt         - dependencias Python.
+
+------------------------------------------------------------------------------
+(B) COMO INSTALAR E EXECUTAR
+------------------------------------------------------------------------------
+
+Requisito: Python 3.10+ . Na raiz do projeto:
+
+    python3 -m venv .venv
+    source .venv/bin/activate          (Windows: .venv\Scripts\activate)
+    pip install -r requirements.txt
+
+Para a simulacao, instale tambem o cliente do CoppeliaSim (e tenha o
+CoppeliaSim 4.x instalado):
+
+    pip install coppeliasim-zmqremoteapi-client pyzmq
+
+--- Comparacao offline (sem simulador) ---
+    python run_maps.py                 (todos os mapas; figuras em maps_out/)
+    python run_maps.py cave square     (apenas os mapas citados)
+
+--- Teste de robustez ---
+    python stress_test.py cave 12
+
+--- Simulacao no CoppeliaSim ---
+    1) Abra o CoppeliaSim com uma cena VAZIA.
+    2) python sim/test_connection.py            (confirma a conexao)
+    3) python sim/navigate.py paredes astar      (1 planejador)
+       python sim/navigate.py square_maze gvd 120
+       python sim/navigate.py cave rrt
+    4) python sim/demo_all.py square_maze 120    (os 3 em sequencia)
+
+    Em cada execucao a navegacao tem duas fases: (1) animacao da construcao do
+    algoritmo (explorados / GVD / arvore) e (2) o robo seguindo o caminho.
+
+Observacao: rode os comandos a partir da RAIZ do projeto (os scripts ajustam o
+sys.path para encontrar core/, planners/ e sim/).
+==============================================================================
