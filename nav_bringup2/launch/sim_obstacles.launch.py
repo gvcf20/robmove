@@ -4,16 +4,14 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
-
 def generate_launch_description():
-    pkg_nav_bringup = get_package_share_directory('nav_bringup')
-    world_file = os.path.join(pkg_nav_bringup, 'worlds', 'obstacles_simple.world')
 
-    sim_empty = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_nav_bringup, 'launch', 'sim_empty.launch.py')
-        ),
-        launch_arguments={'world': world_file}.items()
-    )
+    tb3_pkg = get_package_share_directory('turtlebot3_gazebo')
 
-    return LaunchDescription([sim_empty])
+    return LaunchDescription([
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(tb3_pkg, 'launch', 'empty_world.launch.py')
+            )
+        )
+    ])

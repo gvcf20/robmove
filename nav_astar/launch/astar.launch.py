@@ -63,22 +63,32 @@ def generate_launch_description():
                 pkg_astar,
                 'config',
                 'astar_params.yaml'
-            )
+            ),
+            {'use_sim_time': use_sim_time}
         ]
     )
 
+    rviz = Node(
+    package='rviz2',
+    executable='rviz2',
+    name='rviz2',
+    output='screen',
+    parameters=[{'use_sim_time': use_sim_time}],
+    arguments=['-d', os.path.join(
+        get_package_share_directory('nav_astar'),
+        'config',
+        'rviz',
+        'nav.rviz'
+    )]
+)
+
     return LaunchDescription([
         DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='false'
-        ),
-        Node(
-        package='nav_astar',
-        executable='astar_node',
-        parameters=[{'use_sim_time': use_sim_time}]
+            'use_sim_time',
+            default_value='true'
         ),
         sim,
         slam,
         astar,
-        
+        rviz,
     ])

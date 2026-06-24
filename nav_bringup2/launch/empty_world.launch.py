@@ -34,7 +34,6 @@ def generate_launch_description():
             os.path.join(
                 tb3_pkg,
                 'launch',
-                'sim_empty.launch.py'
             )
         )
     )
@@ -58,12 +57,7 @@ def generate_launch_description():
 )
 
     return LaunchDescription([
-        declare_use_sim_time,
-        declare_world,
-        gz_sim,
-        robot_state_publisher,
-        spawn_robot,
-        bridge,
+        tb3_launch,
         rviz,
         slam,
     ])
