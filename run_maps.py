@@ -45,6 +45,16 @@ def rrt_params(name):
     return p
 
 
+# resolucao minima por mapa: alguns labirintos so ficam conexos (e com o
+# centro alcancavel) acima de certa resolucao. circular_maze precisa de >=160,
+# senao a inflacao fecha os corredores e o centro vira um bolsao isolado.
+MAP_MAXDIM = {"circular_maze": 160}
+
+
+def map_maxdim(name, requested):
+    return max(requested, MAP_MAXDIM.get(name, 0))
+
+
 def find_maps(root="maps"):
     files = []
     for f in glob.glob(os.path.join(root, "**", "*.png"), recursive=True):

@@ -67,6 +67,7 @@ def main():
     if not f:
         print(f"mapa '{hint}' nao encontrado"); return
     name = os.path.splitext(os.path.basename(f))[0]
+    max_dim = RM.map_maxdim(name, max_dim)               # resolucao minima por mapa
     gmap = GridMap.from_png(f, max_dim=max_dim).inflate(RM.ROBOT_RADIUS)
     s, g = RM.pick_endpoints(gmap, name)
     print(f"mapa={name} grid={gmap.shape} planner={planner} start={s} goal={g}")
